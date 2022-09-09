@@ -15,6 +15,7 @@ DistributedArrays = "aaf54ef3-cdf8-58ed-94cc-d582ad619b94"
 EvoTrees = "f6006082-12f8-11e9-0c9c-0d5d367ab1e5"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
@@ -33,4 +34,4 @@ StippleUI = "a3c5d34a-b254-4859-a8fa-b86abb7e84a3"
 Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"
 
 [compat]
-julia = "1.7"
+julia = "1.8"

@@ -1,6 +1,8 @@
 @info "Initializing packages"
 using ScoringEngineDemo
-using BSON
+using JLD2
+using Serialization
+
 using CSV
 using DataFrames
 using Random
@@ -20,8 +22,10 @@ ENV["RESULTS_FILE"] = results_path
 
 @info "Initializing assets"
 const assets_path = joinpath(@__DIR__, "..", "assets")
-const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), @__MODULE__)[:preproc]
-const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), @__MODULE__)[:adapter]
+const preproc_flux = JLD2.load(joinpath(assets_path, "preproc-flux.jld2"))["preproc"]
+const adapter_flux = JLD2.load(joinpath(assets_path, "adapter-flux.jld2"))["adapter"]
+# const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), @__MODULE__)[:preproc]
+# const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), @__MODULE__)[:adapter]
 
 df_tot = ScoringEngineDemo.load_data(joinpath(assets_path, "training_data.csv"))
 
@@ -73,10 +77,8 @@ end
         BatchNorm(num_feats),
         Dense(num_feats, h1, relu),
         Dropout(0.5),
-        Dense(h1, 32, relu),
-        SkipConnection(Dense(32, 32, relu), +),
-        Dense(32, 1),
-        x -> reshape(x, :))
+        Dense(h1 => 1),
+        x -> vec(x))
 
     opt = ADAM(1e-3)
     θ = params(m)
@@ -115,4 +117,25 @@ end |> DataFrame
 m_best = results[findmin(df_results[:, :eval_metric])[2]][:m]
 
 CSV.write(joinpath(results_path, "hyper-flux.csv"), df_results)
-BSON.bson(joinpath(results_path, "model-flux.bson"), Dict(:model => m_best))
+JLD2.save(joinpath(results_path, "model-flux.jld2"), Dict("model" => m_best))
+serialize(joinpath(results_path, "model-flux.dat"), m_best)
+# m1 = deserialize(joinpath(results_path, "model-flux.dat"))
+
+# m = Chain(
+#     BatchNorm(14),
+#     Dense(14, 22, relu),
+#     Dropout(0.5),
+#     Dense(22 => 1),
+#     x -> vec(x))
+
+# using Serialization
+# JLD2.save(joinpath(results_path, "model-flux-test.jld2"), Dict("model" => m))
+# serialize(joinpath(results_path, "model-flux-test.dat"), m)
+# deserialize(joinpath(results_path, "model-flux-test.dat"))
+
+# x1 = rand(5)
+# serialize("vec-test.dat", x1)
+# x2 = deserialize("vec-test.dat")
+
+# m4 = JLD2.load(joinpath(results_path, "model-flux-test.jld2"))["model"]
+# m4 = Serialization.serialize(joinpath(results_path, "model-flux-test.jld2"))["model"]

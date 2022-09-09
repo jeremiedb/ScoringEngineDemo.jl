@@ -15,14 +15,13 @@ df_tot = begin
     dropmissing!(df_tot)
 end
 
-const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineDemo)[:preproc]
-const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineDemo)[:preproc]
+const preproc_gbt = JLD2.load(joinpath(assets_path, "preproc-gbt.jld2"))["preproc"]
+const adapter_gbt = JLD2.load(joinpath(assets_path, "adapter-gbt.jld2"))["adapter"]
+const model_gbt = JLD2.load(joinpath(assets_path, "model-gbt.jld2"))["model"]
 
-const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), ScoringEngineDemo)[:adapter]
-const adapter_gbt = BSON.load(joinpath(assets_path, "adapter-gbt.bson"), ScoringEngineDemo)[:adapter]
-
-const model_flux = BSON.load(joinpath(assets_path, "model-flux.bson"), ScoringEngineDemo)[:model]
-const model_gbt = BSON.load(joinpath(assets_path, "model-gbt.bson"), ScoringEngineDemo)[:model]
+const preproc_flux = JLD2.load(joinpath(assets_path, "preproc-flux.jld2"))["preproc"]
+const adapter_flux = JLD2.load(joinpath(assets_path, "adapter-flux.jld2"))["adapter"]
+const model_flux = deserialize(joinpath(assets_path, "model-flux.dat"))
 
 function infer_flux(df::DataFrame)
     score = df |> preproc_flux |> adapter_flux |> model_flux |> logit

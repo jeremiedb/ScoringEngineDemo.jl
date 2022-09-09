@@ -2,13 +2,14 @@
 @info "@__DIR__: " @__DIR__
 @info "readdir(@__DIR__): " readdir(@__DIR__)
 
-ENV["GENIE_ENV"] = "dev"
+# ENV["GENIE_ENV"] = "dev"
 # ENV["BASEPATH"] = "/proxy/8000/"
 
 @info "Initializing packages"
 using Revise
 using ScoringEngineDemo
-using BSON
+using Serialization
+using JLD2
 using HTTP
 using Sockets
 using JSON3
@@ -38,6 +39,5 @@ route("/") do
 end
 
 @info "Starting Stipple dashboard"
-Genie.startup(8000, "0.0.0.0", async=false)
-# Genie.startup(8000, "127.0.0.1", async=false)
+Genie.up(8000, "0.0.0.0", async=false)
 # down()

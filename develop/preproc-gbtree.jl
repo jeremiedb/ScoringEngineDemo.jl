@@ -3,10 +3,11 @@ using ScoringEngineDemo
 using DataFrames
 using Statistics
 using StatsBase: sample
-using BSON
 using CairoMakie
 using EvoTrees
 using Random
+using BSON
+using JLD2
 
 global targetname = "event"
 
@@ -32,5 +33,22 @@ df_train_pre = preproc(df_train)
 density(collect(skipmissing(df_train_pre.vh_age)))
 density(collect(skipmissing(df_train_pre.drv_age1)))
 
-BSON.bson("assets/preproc-gbt.bson", Dict(:preproc => preproc))
-BSON.bson("assets/adapter-gbt.bson", Dict(:adapter => adapter))
+JLD2.save("assets/preproc-gbt.jld2", Dict("preproc" => preproc))
+JLD2.save("assets/adapter-gbt.jld2", Dict("adapter" => adapter))
+
+# BSON.bson("assets/preproc-gbt.bson", Dict(:preproc => preproc))
+# BSON.bson("assets/adapter-gbt.bson", Dict(:adapter => adapter))
+
+df_train = preproc_gbt(df_train)
+df_eval = preproc_gbt(df_eval)
+
+x_train, y_train = adapter_gbt(df_train, true)
+x_eval, y_eval = adapter_gbt(df_eval, true)
+
+CSV.write("assets/df_train.csv", df_train)
+CSV.write("assets/df_eval.csv", df_eval)
+
+CSV.write("assets/x_train.csv", DataFrame(x_train, norm_feats))
+CSV.write("assets/y_train.csv", DataFrame([y_train], [targetname]))
+CSV.write("assets/x_eval.csv", DataFrame(x_eval, norm_feats))
+CSV.write("assets/y_eval.csv", DataFrame([y_eval], [targetname]))

@@ -1,6 +1,7 @@
 @info "Initializing packages"
 using ScoringEngineDemo
-using BSON
+using Serialization
+using JLD2
 using JSON3
 using DataFrames
 using PlotlyBase
@@ -27,20 +28,21 @@ df_tot = begin
     dropmissing!(df_tot)
 end
 
-const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineDemo)[:preproc]
-const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineDemo)[:preproc]
+const preproc_gbt = JLD2.load(joinpath(assets_path, "preproc-gbt.jld2"))["preproc"]
+const adapter_gbt = JLD2.load(joinpath(assets_path, "adapter-gbt.jld2"))["adapter"]
+const model_gbt = JLD2.load(joinpath(assets_path, "model-gbt.jld2"))["model"]
 
-const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), ScoringEngineDemo)[:adapter]
-const adapter_gbt = BSON.load(joinpath(assets_path, "adapter-gbt.bson"), ScoringEngineDemo)[:adapter]
-
-const model_flux = BSON.load(joinpath(assets_path, "model-flux.bson"), ScoringEngineDemo)[:model]
-const model_gbt = BSON.load(joinpath(assets_path, "model-gbt.bson"), ScoringEngineDemo)[:model]
+const preproc_flux = JLD2.load(joinpath(assets_path, "preproc-flux.jld2"))["preproc"]
+const adapter_flux = JLD2.load(joinpath(assets_path, "adapter-flux.jld2"))["adapter"]
+const model_flux = deserialize(joinpath(assets_path, "model-flux.dat"))
+# const model_flux = JLD2.load(joinpath(assets_path, "model-flux.jld2"))["model"]
 
 @info "Initializing scoring service"
 function infer_flux(df::DataFrame)
     score = df |> preproc_flux |> adapter_flux |> model_flux |> logit
     return Float64.(score)
 end
+
 function infer_gbt(df::DataFrame)
     score = ScoringEngineDemo.predict(model_gbt, df |> preproc_gbt |> adapter_gbt) |> vec
     return Float64.(score)
@@ -154,8 +156,8 @@ df_explain_flux = get_shap_explain(df_shap_flux)
 df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df_tot, target_features=features_importance)
 df_explain_gbt = get_shap_explain(df_shap_gbt)
 
-p_flux = ScoringEngineDemo.plot_shap_explain(df_explain_flux, title="Flux explain", name="flux")
-p_gbt = ScoringEngineDemo.plot_shap_explain(df_explain_gbt, title="GBT explain", name="gbt")
+p_flux = ScoringEngineDemo.plot_shap_explain(df_explain_flux, title="Flux explain")
+p_gbt = ScoringEngineDemo.plot_shap_explain(df_explain_gbt, title="GBT explain")
 
 PlotlyBase.Plot(p_flux[:traces], p_flux[:layout]; config=p_flux[:config])
 PlotlyBase.Plot(p_gbt[:traces], p_gbt[:layout]; config=p_gbt[:config])
